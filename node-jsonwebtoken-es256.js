@@ -1,5 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { createPrivateKey, createPublicKey } from 'node:crypto';
+import fs from 'node:fs';
+
+const emails = JSON.parse(fs.readFileSync('./emails.json').toString());
 
 const publicKey = JSON.parse('{"x": "7-INQ150R-MCWlj5X_wyGLRIRYAA-o8NakJiUq7gOGg", "y": "dM-GsyJvdDOuALE3l-U9lPL8V3gY_5BPjLH539yTdKU", "alg": "ES256", "crv": "P-256", "kid": "cdd2969c-7e49-4a46-bcbe-e8bbdf74c7f3", "kty": "EC"}');
 const privateKey = JSON.parse('{"alg":"ES256","crv":"P-256","d":"h-UIda1elff-qw81gsSQakyzOv8Dozv5RcQqFIV6R1Y","kid":"cdd2969c-7e49-4a46-bcbe-e8bbdf74c7f3","kty":"EC","x":"7-INQ150R-MCWlj5X_wyGLRIRYAA-o8NakJiUq7gOGg","y":"dM-GsyJvdDOuALE3l-U9lPL8V3gY_5BPjLH539yTdKU"}');
@@ -9,9 +12,10 @@ const privateKeyObject = createPrivateKey({ format: 'jwk', key: privateKey });
 
 const signOptions = { algorithm: privateKey.alg };
 const verifyOptions = { algorithms: [publicKey.alg] };
-const sub = 'foo@bar.com';
 const numIterations = parseInt(process.argv[2]);
 let startTS = Date.now();
+let emailsIdx = 0;
+const emailsLength = emails.length;
 
 for (let i = 0; i < numIterations; i++) {
   if (i === 10000) {
@@ -19,6 +23,7 @@ for (let i = 0; i < numIterations; i++) {
   }
 
   const nowSeconds = Math.round(Date.now() / 1000);
+  const sub = emails[emailsIdx];
 
   const token = jwt.sign({
     sub,
@@ -30,6 +35,12 @@ for (let i = 0; i < numIterations; i++) {
 
   if (claims.sub !== sub) {
     process.exit(1);
+  }
+
+  emailsIdx += 1;
+
+  if (emailsIdx >= emailsLength) {
+    emailsIdx = 0;
   }
 }
 

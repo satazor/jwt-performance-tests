@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
@@ -11,6 +13,11 @@ import (
 )
 
 func main() {
+	var emailsFile, _ = ioutil.ReadFile("./emails.json")
+	var emails []string
+
+	json.Unmarshal([]byte(emailsFile), &emails)
+
 	var publicKey = "{\"x\": \"7-INQ150R-MCWlj5X_wyGLRIRYAA-o8NakJiUq7gOGg\", \"y\": \"dM-GsyJvdDOuALE3l-U9lPL8V3gY_5BPjLH539yTdKU\", \"alg\": \"ES256\", \"crv\": \"P-256\", \"kid\": \"cdd2969c-7e49-4a46-bcbe-e8bbdf74c7f3\", \"kty\": \"EC\"}"
 	var privateKey = "{\"alg\":\"ES256\",\"crv\":\"P-256\",\"d\":\"h-UIda1elff-qw81gsSQakyzOv8Dozv5RcQqFIV6R1Y\",\"kid\":\"cdd2969c-7e49-4a46-bcbe-e8bbdf74c7f3\",\"kty\":\"EC\",\"x\":\"7-INQ150R-MCWlj5X_wyGLRIRYAA-o8NakJiUq7gOGg\",\"y\":\"dM-GsyJvdDOuALE3l-U9lPL8V3gY_5BPjLH539yTdKU\"}"
 
@@ -23,9 +30,10 @@ func main() {
 	var rawPrivateKey interface{}
 	privateKeyJwk.Raw(&rawPrivateKey)
 
-	var sub = "foo@bar.com"
 	var numIterations, _ = strconv.Atoi(os.Args[1])
 	var startTS int64 = time.Now().UnixMilli()
+	var emailsIdx = 0
+	var emailsLength = len(emails)
 
 	for i := 0; i < numIterations; i++ {
 		if i == 10000 {
@@ -33,6 +41,7 @@ func main() {
 		}
 
 		nowSeconds := time.Now().UnixMilli() / 1000
+		sub := emails[emailsIdx]
 
 		token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
 			"sub": sub,
@@ -49,6 +58,12 @@ func main() {
 
 		if claims["sub"] != sub {
 			os.Exit(1)
+		}
+
+		emailsIdx++
+
+		if emailsIdx >= emailsLength {
+			emailsIdx = 0
 		}
 	}
 

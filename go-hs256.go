@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
@@ -10,11 +12,17 @@ import (
 )
 
 func main() {
+	var emailsFile, _ = ioutil.ReadFile("./emails.json")
+	var emails []string
+
+	json.Unmarshal([]byte(emailsFile), &emails)
+
 	var jwtSecret = []byte(os.Getenv("bmtXKKngXH1HRdshrI7LkJxmyNZyDN1f"))
 
-	var sub = "foo@bar.com"
 	var numIterations, _ = strconv.Atoi(os.Args[1])
 	var startTS int64 = time.Now().UnixMilli()
+	var emailsIdx = 0
+	var emailsLength = len(emails)
 
 	for i := 0; i < numIterations; i++ {
 		if i == 10000 {
@@ -22,6 +30,7 @@ func main() {
 		}
 
 		nowSeconds := time.Now().UnixMilli() / 1000
+		sub := emails[emailsIdx]
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"sub": sub,
@@ -38,6 +47,12 @@ func main() {
 
 		if claims["sub"] != sub {
 			os.Exit(1)
+		}
+
+		emailsIdx++
+
+		if emailsIdx >= emailsLength {
+			emailsIdx = 0
 		}
 	}
 
