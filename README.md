@@ -17,13 +17,13 @@ $ node node-jsonwebtoken-hs256.js 1000000
 # 1000000 iterations took 7771 ms
 
 $ node node-fast-jwt-hs256.js 1000000
-# 1000000 iterations took 5621 ms
+# 1000000 iterations took 4807 ms
 
 $ go run go-hs256.go 1000000
 # 1000000 iterations took 3621 ms
 ```
 
-Go is 1.55x faster than Node.js.   
+Go is ~1.33x faster than Node.js.   
 Go uses less memory than Node.js (15MB vs 62MB) albeit Node.js has a higher base memory (~40MB).
 
 ### Asymmetric key using `ES256`:
@@ -41,5 +41,5 @@ $ go run go-es256.go 1000000
 # 1000000 iterations took 59875 ms
 ```
 
-Go is 1.03x faster than Node.js.   
+Go is ~1.03x faster than Node.js.   
 Go uses less memory than Node.js (15MB vs 62MB) albeit Node.js has a higher base memory (~40MB).
